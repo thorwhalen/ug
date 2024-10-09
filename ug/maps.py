@@ -2,11 +2,92 @@
 
 import time
 import itertools
-from typing import Any, Dict, List, Tuple, Union, Generator
+from functools import partial
+from typing import (
+    Any,
+    Dict,
+    List,
+    Tuple,
+    Union,
+    Generator,
+    Callable,
+    Optional,
+    KT,
+    Iterable,
+    TypeVar,
+)
+from lkj import print_progress
 
 from ug.util import ensure_gmaps_client, ClientSpec, DFLT_GOOGLE_API_KEY_ENV_VAR
 
 DFLT_RADIUS_IN_METERS = 50000  # in meters
+
+
+LocationsSource = TypeVar('LocationsSource')
+Location = TypeVar('Location')
+
+
+def identity(x):
+    return x
+
+
+def acquire_maps_search_results_from_different_locations(
+    search_query: str,
+    locations: Iterable[LocationsSource],
+    *,
+    save_result: Callable[[KT, dict], Any],
+    get_location: Callable[[LocationsSource], Location] = identity,
+    get_key: Optional[Callable[[LocationsSource], KT]] = None,
+    radius_in_meters: int = DFLT_RADIUS_IN_METERS,
+    raise_on_error: bool = True,
+) -> list:
+    """
+    Acquire search results from different locations and store them.
+
+    Note: The function does NOT return the results, but a (possibly empty) list of
+    errors (if raise_on_error=False. The results are stored using the save_result 
+    function. Users need to provide this function. Users may want to check out the
+    `dol` package and ecosystem for tools to make storing functions.
+
+    Parameters:
+        search_query (str): The search term to query on Google Maps.
+        locations (Iterable[LocationsSource]): The locations to search at.
+        save_result (Callable[[KT, dict], Any]): A function to save the results.
+        get_location (Callable[[LocationsSource], Location]): A function to extract the location from the location source.
+        get_key (Optional[Callable[[LocationsSource], KT]]): A function to extract the key from the location source.
+        radius_in_meters (int): The search radius in meters.
+
+    """
+    clog = partial(print_progress, refresh=True)
+
+    def _get_key(i, location):
+        if get_key:
+            return get_key(location)
+        else:
+            return i
+
+    def search_results_gen():
+        location = None  # just to avoid UnboundLocalError
+        for i, location_src in enumerate(locations):
+            try:
+                location = get_location(location_src)  # extract location
+                key = _get_key(i, location_src)  # extract key
+                clog(f"{i:04.0f}: {key}")
+                # search the query at that location
+                r = search_maps(
+                    search_query, location, radius_in_meters=radius_in_meters
+                )
+                save_result(key, r)  # save the results
+            except Exception as e:
+                if raise_on_error:
+                    raise
+                yield dict(i=i, location=location, e=e)
+                print(f"ERROR: {e}")
+
+    errors = list(search_results_gen())
+    print(f"Number of errors: {len(errors)}")
+
+    return errors
 
 
 def search_maps(
