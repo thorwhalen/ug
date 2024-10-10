@@ -45,7 +45,7 @@ def acquire_maps_search_results_from_different_locations(
     Acquire search results from different locations and store them.
 
     Note: The function does NOT return the results, but a (possibly empty) list of
-    errors (if raise_on_error=False. The results are stored using the save_result 
+    errors (if raise_on_error=False. The results are stored using the save_result
     function. Users need to provide this function. Users may want to check out the
     `dol` package and ecosystem for tools to make storing functions.
 
@@ -236,6 +236,75 @@ def maps_paged_results(
             radius=radius_in_meters,
         )
         yield response.get('results', [])
+
+
+# -------------------------------------------------------------------------------------
+# Geo utils
+
+import math
+
+
+def haversine_distance(latlon1, latlon2):
+    """
+    Calculate the distance between two points on the Earth's surface using the Haversine formula.
+
+    The Haversine formula accounts for the Earth's curvature, making it suitable for calculating
+    the great-circle distance between two geographic coordinates (latitude and longitude) in meters.
+
+    Parameters:
+    latlon1:
+        Tuple of latitude and longitude of the first point in decimal degrees.
+    latlon2: float
+        Tuple of latitude and longitude of the second point in decimal degrees.
+
+    Returns:
+    float
+        Distance between the two points in meters.
+
+    Explanation:
+    1. The radius of the Earth (R) is approximately 6,371,000 meters.
+    2. Convert latitudes and longitudes from degrees to radians, since trigonometric functions in
+       Python's math library operate in radians.
+    3. The Haversine formula calculates the great-circle distance:
+       - 'a' is the square of half the chord length between the points.
+       - 'c' is the angular distance in radians.
+    4. Multiply 'c' by the Earth's radius to get the distance in meters.
+
+    Example usage:
+
+    >>> # Paris to New York
+    >>> haversine_distance((48.8566, 2.3522), (40.7128, -74.0060))  # doctest: +ELLIPSIS
+    5837240.90...
+    >>> # San Francisco to Los Angeles
+    >>> haversine_distance([37.7749, -122.4194], [34.0522, -118.2437])  # doctest: +ELLIPSIS
+    559120.57...
+    >>>  # Same location (London)
+    >>> haversine_distance((51.5074, -0.1278), (51.5074, -0.1278))
+    0.0
+    """
+    lat1, lon1 = latlon1
+    lat2, lon2 = latlon2
+
+    # Radius of the Earth in meters
+    R = 6371000
+
+    # Convert latitudes and longitudes from degrees to radians
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    delta_phi = math.radians(lat2 - lat1)
+    delta_lambda = math.radians(lon2 - lon1)
+
+    # Haversine formula
+    a = (
+        math.sin(delta_phi / 2) ** 2
+        + math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2) ** 2
+    )
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+    # Distance in meters
+    distance = R * c
+
+    return distance
 
 
 # import time
