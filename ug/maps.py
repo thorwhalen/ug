@@ -14,11 +14,19 @@ from typing import (
     Optional,
     KT,
     Iterable,
+    Iterator,
     TypeVar,
+    MutableMapping,
 )
 from lkj import print_progress
 
-from ug.util import ensure_gmaps_client, ClientSpec, DFLT_GOOGLE_API_KEY_ENV_VAR
+from ug.util import (
+    ensure_gmaps_client,
+    ClientSpec,
+    DFLT_GOOGLE_API_KEY_ENV_VAR,
+    KvWriterSpec,
+    ensure_kv_writer,
+)
 
 DFLT_RADIUS_IN_METERS = 50000  # in meters
 
@@ -35,11 +43,13 @@ def acquire_maps_search_results_from_different_locations(
     search_query: str,
     locations: Iterable[LocationsSource],
     *,
-    save_result: Callable[[KT, dict], Any],
+    save_result: KvWriterSpec,
     get_location: Callable[[LocationsSource], Location] = identity,
     get_key: Optional[Callable[[LocationsSource], KT]] = None,
     radius_in_meters: int = DFLT_RADIUS_IN_METERS,
     raise_on_error: bool = True,
+    start_index: int = 0,
+    stop_index: Optional[int] = None,
 ) -> list:
     """
     Acquire search results from different locations and store them.
@@ -56,23 +66,26 @@ def acquire_maps_search_results_from_different_locations(
         get_location (Callable[[LocationsSource], Location]): A function to extract the location from the location source.
         get_key (Optional[Callable[[LocationsSource], KT]]): A function to extract the key from the location source.
         radius_in_meters (int): The search radius in meters.
+        raise_on_error (bool): Whether to raise an error if an exception occurs.
+        start_index (Optional[int]): The index to start at (inclusive).
+        stop_index (Optional[int]): The index to stop at (exclusive).
 
     """
-    clog = partial(print_progress, refresh=True)
+    save_result = ensure_kv_writer(save_result)
+    if get_key is None:
+        get_key = get_location  # use the location as the key
 
-    def _get_key(i, location):
-        if get_key:
-            return get_key(location)
-        else:
-            return i
+    single_line_print = partial(print_progress, refresh=True)
+
+    locations = itertools.islice(locations, start_index, stop_index)
 
     def search_results_gen():
         location = None  # just to avoid UnboundLocalError
         for i, location_src in enumerate(locations):
             try:
                 location = get_location(location_src)  # extract location
-                key = _get_key(i, location_src)  # extract key
-                clog(f"{i:04.0f}: {key}")
+                key = get_key(location_src)  # extract key
+                single_line_print(f"{i:04.0f}: {key}" + " " * 30)
                 # search the query at that location
                 r = search_maps(
                     search_query, location, radius_in_meters=radius_in_meters
@@ -81,7 +94,7 @@ def acquire_maps_search_results_from_different_locations(
             except Exception as e:
                 if raise_on_error:
                     raise
-                yield dict(i=i, location=location, e=e)
+                yield dict(i=i, search_query=search_query, location=location, e=e)
                 print(f"ERROR: {e}")
 
     errors = list(search_results_gen())
@@ -236,6 +249,24 @@ def maps_paged_results(
             radius=radius_in_meters,
         )
         yield response.get('results', [])
+
+
+def get_latlon(
+    query: str,
+    *,
+    gmaps_client: ClientSpec = DFLT_GOOGLE_API_KEY_ENV_VAR,
+) -> Tuple[float, float]:
+    """
+    Get the latitude and longitude for a given query (address, city, etc.).
+    """
+    gmaps_client = ensure_gmaps_client(gmaps_client)
+
+    geocode_result = gmaps_client.geocode(query)
+    if geocode_result:
+        location = geocode_result[0]['geometry']['location']
+        return location['lat'], location['lng']
+    else:
+        raise ValueError(f"Could not find location for: {query}")
 
 
 # -------------------------------------------------------------------------------------
