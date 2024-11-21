@@ -39,6 +39,137 @@ def identity(x):
     return x
 
 
+from typing import Union, List
+from typing_extensions import Literal
+from urllib.parse import urlencode
+
+
+def google_maps_url(
+    query: Union[str, tuple, list, dict],
+    *,
+    zoom: int = 15,
+    maptype: Literal[
+        'roadmap', 'satellite', 'hybrid', 'terrain', 'google_earth'
+    ] = 'roadmap',
+    origin: str = None,
+    destination: str = None,
+    travelmode: Literal['driving', 'walking', 'bicycling', 'transit'] = None,
+    waypoints: List[str] = None,
+    layer: Literal['bicycling', 'traffic', 'transit'] = None,
+    place_id: str = None,
+    street_view: bool = False,
+    heading: float = None,
+    pitch: float = None,
+    language: str = None,
+    embed: bool = False,
+    iwloc: str = None,
+) -> str:
+    """
+    Generate a Google Maps URL for a location, directions, or a map view.
+
+    Parameters:
+        query (Union[str, tuple, list, dict]): Address, coordinates, or dictionary with 'lat' and 'lon'.
+        zoom (int): Zoom level (default is 15).
+        maptype (str): Type of map. One of 'roadmap', 'satellite', 'hybrid', 'terrain', 'google_earth'.
+        origin (str): Starting location for directions.
+        destination (str): Destination for directions.
+        travelmode (str): Mode of transportation: 'driving', 'walking', 'bicycling', or 'transit'.
+        waypoints (list of str): Stops along the route.
+        layer (str): Map overlay layer: 'bicycling', 'traffic', or 'transit'.
+        place_id (str): Unique Place ID for a location.
+        street_view (bool): If True, show Street View.
+        heading (float): Direction camera is pointing in Street View.
+        pitch (float): Up/down angle of the camera in Street View.
+        language (str): Language code for the map interface.
+        embed (bool): If True, generate embeddable map.
+        iwloc (str): Center the map on a specific pin or location.
+
+    Returns:
+        str: A fully constructed Google Maps URL.
+
+    Examples:
+        >>> google_maps_url({'lat': 43.5300401, 'lon': 5.4229452})
+        'https://www.google.com/maps?q=43.5300401,5.4229452&z=15&t=m'
+
+        >>> google_maps_url((43.5300401, 5.4229452), zoom=16, maptype='satellite', layer='traffic')
+        'https://www.google.com/maps?q=43.5300401,5.4229452&z=16&t=k&layer=t'
+
+        >>> google_maps_url('some address', street_view=True, heading=90)
+        'https://www.google.com/maps?q=some+address&z=15&t=m&cbll=some+address&cbp=12,90,0,0,5,0'
+    """
+    if isinstance(query, (tuple, list)) and len(query) == 2:
+        query = f"{query[0]},{query[1]}"
+    elif isinstance(query, dict):
+        if 'lat' in query and 'lon' in query:
+            query = f"{query['lat']},{query['lon']}"
+        elif 'latitude' in query and 'longitude' in query:
+            query = f"{query['latitude']},{query['longitude']}"
+        else:
+            raise ValueError(
+                "Invalid dictionary format for query: must contain 'lat' and 'lon' keys."
+            )
+    elif not isinstance(query, str):
+        raise ValueError(
+            f"Query must be a string, tuple, list, or dictionary. Was: {query}"
+        )
+
+    # Map types and layers
+    maptype_mapping = {
+        'roadmap': 'm',
+        'satellite': 'k',
+        'hybrid': 'h',
+        'terrain': 'p',
+        'google_earth': 'e',
+    }
+    layer_mapping = {
+        'bicycling': 'c',
+        'traffic': 't',
+        'transit': 'p',
+    }
+
+    # Construct parameters
+    params = {}
+    if origin or destination or travelmode or waypoints:
+        base_url = 'https://www.google.com/maps/dir/'
+        params['api'] = '1'
+        if origin:
+            params['origin'] = origin
+        if destination:
+            params['destination'] = destination
+        if travelmode:
+            params['travelmode'] = travelmode
+        if waypoints:
+            params['waypoints'] = '|'.join(waypoints)
+    else:
+        base_url = 'https://www.google.com/maps'
+        if place_id:
+            params['place_id'] = place_id
+        else:
+            params['q'] = query
+            params['z'] = str(zoom)
+            params['t'] = maptype_mapping.get(maptype, 'm')
+            if layer:
+                params['layer'] = layer_mapping.get(layer)
+            if street_view:
+                params['cbll'] = query
+                cbp_params = ['12']
+                cbp_params.append(str(heading) if heading is not None else '0')
+                cbp_params.append(str(pitch) if pitch is not None else '0')
+                cbp_params.extend(['0', '5', '0'])
+                params['cbp'] = ','.join(cbp_params)
+    if language:
+        params['hl'] = language
+    if embed:
+        params['output'] = 'embed'
+    if iwloc:
+        params['iwloc'] = iwloc
+
+    # Construct and return URL
+    query_string = urlencode(params, safe=',|')
+    url = f"{base_url}?{query_string}"
+    return url
+
+
 def acquire_maps_search_results_from_different_locations(
     search_query: str,
     locations: Iterable[LocationsSource],
