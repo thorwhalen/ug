@@ -39,8 +39,10 @@ ExtraInfo = str
 
 def dataframe_to_form(
     form_table: 'pandas.DataFrame',
+    *,
     field_element_types: Optional[Dict[Field, ElementType]] = None,
     field_extra_info: Optional[Dict[Field, ExtraInfo]] = None,
+    static_texts: Optional[Dict[int, str]] = None,
     client_secrets_file: Optional[str] = None,
 ):
     r"""
@@ -56,6 +58,7 @@ def dataframe_to_form(
     :param form_table: The DataFrame containing the form data.
     :param field_element_types: Optional dict mapping fields to Google Forms element types.
     :param field_extra_info: Optional dict mapping fields to extra information/instructions.
+    :param static_texts: Optional dict mapping positions to static text content.
     :return: A list of dicts containing form IDs and URLs.
 
     Example usage:
@@ -102,6 +105,20 @@ def dataframe_to_form(
             raise ValueError(
                 'Please set the HFN_GOOGLE_CLIENT_JSON_PATH environment variable to the path of your Google client JSON file.'
             )
+
+    def create_static_text_item(text_content):
+            # Create a static text item
+            static_text_item = {
+                "createItem": {
+                    "item": {
+                        "title": "",
+                        "description": text_content,
+                        "pageBreakItem": {},
+                    },
+                    "location": {"index": 0},
+                }
+            }
+            return static_text_item
 
     def authenticate():
         # Authenticate and build the Google Forms API service
@@ -213,6 +230,12 @@ def dataframe_to_form(
         form_id = form_response['formId']
 
         requests = []
+
+        if static_texts:
+            for position, text_content in sorted(static_texts.items()):
+                static_text_item = create_static_text_item(text_content)
+                static_text_item['createItem']['location']['index'] = position
+                requests.append(static_text_item)
 
         for field in form_table.columns:
             existing_value = row[field]
