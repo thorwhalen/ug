@@ -40,10 +40,10 @@ ExtraInfo = str
 def dataframe_to_form(
     form_table: 'pandas.DataFrame',
     *,
-    field_element_types: Optional[Dict[Field, ElementType]] = None,
-    field_extra_info: Optional[Dict[Field, ExtraInfo]] = None,
-    static_texts: Optional[Dict[int, str]] = None,
-    client_secrets_file: Optional[str] = None,
+    field_element_types: dict[Field, ElementType] | None = None,
+    field_extra_info: dict[Field, ExtraInfo] | None = None,
+    static_texts: dict[int, str] | None = None,
+    client_secrets_file: str | None = None,
 ):
     r"""
     Converts each row of a DataFrame into a Google Form with fields pre-populated

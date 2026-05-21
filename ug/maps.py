@@ -9,15 +9,11 @@ from typing import (
     List,
     Tuple,
     Union,
-    Generator,
-    Callable,
     Optional,
     KT,
-    Iterable,
-    Iterator,
     TypeVar,
-    MutableMapping,
 )
+from collections.abc import Generator, Callable, Iterable, Iterator, MutableMapping
 from lkj import print_progress
 
 from ug.util import (
@@ -40,12 +36,12 @@ def identity(x):
 
 
 from typing import Union, List
-from typing_extensions import Literal
+from typing import Literal
 from urllib.parse import urlencode
 
 
 def google_maps_url(
-    query: Union[str, tuple, list, dict],
+    query: str | tuple | list | dict,
     *,
     zoom: int = 15,
     maptype: Literal[
@@ -54,7 +50,7 @@ def google_maps_url(
     origin: str = None,
     destination: str = None,
     travelmode: Literal['driving', 'walking', 'bicycling', 'transit'] = None,
-    waypoints: List[str] = None,
+    waypoints: list[str] = None,
     layer: Literal['bicycling', 'traffic', 'transit'] = None,
     place_id: str = None,
     street_view: bool = False,
@@ -176,11 +172,11 @@ def acquire_maps_search_results_from_different_locations(
     *,
     save_result: KvWriterSpec,
     get_location: Callable[[LocationsSource], Location] = identity,
-    get_key: Optional[Callable[[LocationsSource], KT]] = None,
+    get_key: Callable[[LocationsSource], KT] | None = None,
     radius_in_meters: int = DFLT_RADIUS_IN_METERS,
     raise_on_error: bool = True,
     start_index: int = 0,
-    stop_index: Optional[int] = None,
+    stop_index: int | None = None,
 ) -> list:
     """
     Acquire search results from different locations and store them.
@@ -236,13 +232,13 @@ def acquire_maps_search_results_from_different_locations(
 
 def search_maps(
     query: str,
-    center_location: Union[str, Tuple[float, float], List[float]],
+    center_location: str | tuple[float, float] | list[float],
     radius_in_meters: int = DFLT_RADIUS_IN_METERS,
     *,
     gmaps_client: ClientSpec = DFLT_GOOGLE_API_KEY_ENV_VAR,
     n_results: int = 10,
     seconds_between_requests: int = 2,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Retrieves the top `n_results` from Google Maps for a given search query and location.
 
@@ -341,12 +337,12 @@ def search_maps(
 
 def maps_paged_results(
     query: str,
-    location_coords: Tuple[float, float],
+    location_coords: tuple[float, float],
     radius_in_meters: int = DFLT_RADIUS_IN_METERS,
     *,
     gmaps_client: ClientSpec = DFLT_GOOGLE_API_KEY_ENV_VAR,
     seconds_between_requests: int = 2,
-) -> Generator[List[Dict[str, Any]], None, None]:
+) -> Generator[list[dict[str, Any]], None, None]:
     """
     Generator function to fetch paged results from the Google Maps API.
 
@@ -386,7 +382,7 @@ def get_latlon(
     query: str,
     *,
     gmaps_client: ClientSpec = DFLT_GOOGLE_API_KEY_ENV_VAR,
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     """
     Get the latitude and longitude for a given query (address, city, etc.).
     """

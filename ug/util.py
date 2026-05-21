@@ -1,7 +1,8 @@
 """Utils for ug"""
 
 import os
-from typing import Union, Any, MutableMapping, Callable, KT, VT
+from typing import Union, Any, KT, VT
+from collections.abc import MutableMapping, Callable
 
 from googlemaps import Client
 
