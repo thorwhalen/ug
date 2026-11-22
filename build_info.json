@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "built_at": "2026-11-22T19:00:39Z",
+  "package": {
+    "name": "ug",
+    "version": "0.0.6",
+    "display_name": "ug",
+    "source": "pyproject.toml"
+  },
+  "git": {
+    "available": true,
+    "commit": "0743020bdf792774fe84c7a917418d4806eda94a",
+    "short_commit": "0743020",
+    "branch": "main",
+    "tags": [],
+    "dirty": false,
+    "remote_url": "https://github.com/thorwhalen/ug",
+    "commit_url": "https://github.com/thorwhalen/ug/commit/0743020bdf792774fe84c7a917418d4806eda94a",
+    "error": null
+  },
+  "ci": {
+    "provider": "github",
+    "repository": "thorwhalen/ug",
+    "sha": "0743020bdf792774fe84c7a917418d4806eda94a",
+    "sha_in_history": true,
+    "ref": "refs/heads/main",
+    "ref_name": "main",
+    "run_id": "45058120619",
+    "run_url": "https://github.com/thorwhalen/ug/actions/runs/45058120619",
+    "server_url": "https://github.com"
+  },
+  "tools": {
+    "epythet": "0.2.23",
+    "sphinx": "9.1.1",
+    "docutils": "0.22.4",
+    "python": "3.12.16"
+  },
+  "config": {
+    "theme": "auto",
+    "html_theme": "sphinxawesome_theme",
+    "accent": "#844700",
+    "mode": "auto",
+    "api_generator": "autosummary",
+    "ignore": [
+      "tests/",
+      "scrap/",
+      "examples/"
+    ],
+    "agent_outputs": true,
+    "aggregates": [
+      "md"
+    ],
+    "ai_artifacts": true,
+    "provenance": true,
+    "docs_dir": "docsrc"
+  },
+  "site": {
+    "modules_documented": 4,
+    "objects_documented": 7
+  },
+  "pypi": {
+    "checked": true,
+    "latest": "0.0.11",
+    "relation": "behind",
+    "error": null
+  },
+  "reproduce": "git clone https://github.com/thorwhalen/ug && cd ug\ngit checkout 0743020bdf792774fe84c7a917418d4806eda94a\npip install \"epythet==0.2.23\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "warnings": [],
+  "alignment": {
+    "aligned": false,
+    "notes": [
+      "The documented version (0.0.6) is behind the latest release on PyPI (0.0.11): `pip install ug` gives newer code than these docs describe."
+    ]
+  }
+}

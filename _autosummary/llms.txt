@@ -1,0 +1,15 @@
+# ug
+
+> Utils using Google API
+
+
+## Pages in this subsection
+
+- [ug](ug.html.md): Utils using Google APIs.
+- [ug.forms](ug.forms.html.md): Working with Google Forms in Python
+- [ug.maps](ug.maps.html.md): Google Maps tools.
+- [ug.util](ug.util.html.md): Utils for ug
+
+## Optional
+
+- [Top-level llms.txt](../llms.txt): Complete documentation index.

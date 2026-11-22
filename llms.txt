@@ -1,0 +1,22 @@
+# ug
+
+> Utils using Google API
+
+
+## Pages
+
+- [ug](index.html.md): Utils using Google API
+- [API reference](api.html.md): | &#96;ug&#96;   | Utils using Google APIs.   |
+- [ug](_autosummary/ug.html.md): Utils using Google APIs.
+- [ug.forms](_autosummary/ug.forms.html.md): Working with Google Forms in Python
+- [ug.maps](_autosummary/ug.maps.html.md): Google Maps tools.
+- [ug.util](_autosummary/ug.util.html.md): Utils for ug
+- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-11-22 19:00 UTC&#42;&#42; from commit &lt;a href="https://github.com/tho...
+
+## Optional
+
+- [ug.md](ug.md): Complete documentation in a single file.
+
+## Build
+
+- [build_info.json](build_info.json): build provenance (commit, version, tool versions, whether the docs match the package)

@@ -1,0 +1,18 @@
+ug.maps
+=======
+
+.. automodule:: ug.maps
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      acquire_maps_search_results_from_different_locations
+      get_latlon
+      google_maps_url
+      haversine_distance
+      identity
+      maps_paged_results
+      search_maps
+   

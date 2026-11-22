@@ -1,0 +1,14 @@
+ug.util
+=======
+
+.. automodule:: ug.util
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      ensure_gmaps_client
+      ensure_kv_writer
+      resolve_env_var_if_starts_with_dollar_sign
+   
