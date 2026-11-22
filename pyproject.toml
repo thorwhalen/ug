@@ -18,6 +18,9 @@ authors = [
 dependencies = [
     "googlemaps",
     "lkj",
+    "google-auth",
+    "google-auth-oauthlib",
+    "google-api-python-client",
 ]
 
 [project.urls]
