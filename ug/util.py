@@ -6,7 +6,7 @@ from collections.abc import MutableMapping, Callable
 
 from googlemaps import Client
 
-DFLT_GOOGLE_API_KEY_ENV_VAR = '$GOOGLE_API_KEY'
+DFLT_GOOGLE_API_KEY_ENV_VAR = "$GOOGLE_API_KEY"
 
 
 APIKeyT = str
@@ -17,7 +17,7 @@ KvWriterSpec = Union[MutableMapping, KvWriterFunc]
 
 
 def resolve_env_var_if_starts_with_dollar_sign(x: Any) -> bool:
-    if isinstance(x, str) and x.startswith('$'):
+    if isinstance(x, str) and x.startswith("$"):
         return os.environ.get(x[1:])
     else:
         return x

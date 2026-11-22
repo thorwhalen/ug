@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ug"
-version = "0.0.6"
+version = "0.0.12"
 description = "Utils using Google API"
 readme = "README.md"
 requires-python = ">=3.10"

@@ -2,11 +2,11 @@
 Working with Google Forms in Python
 
 **IMPORTANT NOTE: Getting the credentials right for this function can be tricky.
-At the time of writing this, the forms API isn't as easy as setting up than the maps or search API, 
-which in itself isn't as easy as most APIs I know. 
+At the time of writing this, the forms API isn't as easy as setting up than the maps or search API,
+which in itself isn't as easy as most APIs I know.
 Thankfully, there's now AI to help out with the UX mess that is the Google API credentials setup!
 
-I won't give instructions here, because AI will help you better than I. 
+I won't give instructions here, because AI will help you better than I.
 
 Just try the function out, and get AI to help your through the credentials hell.
 **
@@ -25,20 +25,20 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 
 # Define valid Google Forms element types
 ElementType = Literal[
-    'TEXT',
-    'PARAGRAPH_TEXT',
-    'MULTIPLE_CHOICE',
-    'CHECKBOXES',
-    'DROPDOWN',
-    'DATE',
-    'TIME',
+    "TEXT",
+    "PARAGRAPH_TEXT",
+    "MULTIPLE_CHOICE",
+    "CHECKBOXES",
+    "DROPDOWN",
+    "DATE",
+    "TIME",
 ]
 Field = str
 ExtraInfo = str
 
 
 def dataframe_to_form(
-    form_table: 'pandas.DataFrame',
+    form_table: "pandas.DataFrame",
     *,
     field_element_types: dict[Field, ElementType] | None = None,
     field_extra_info: dict[Field, ExtraInfo] | None = None,
@@ -101,37 +101,37 @@ def dataframe_to_form(
     import pandas as pd
 
     if not client_secrets_file:
-        if not (client_secrets_file := os.getenv('HFN_GOOGLE_CLIENT_JSON_PATH')):
+        if not (client_secrets_file := os.getenv("HFN_GOOGLE_CLIENT_JSON_PATH")):
             raise ValueError(
-                'Please set the HFN_GOOGLE_CLIENT_JSON_PATH environment variable to the path of your Google client JSON file.'
+                "Please set the HFN_GOOGLE_CLIENT_JSON_PATH environment variable to the path of your Google client JSON file."
             )
 
     def create_static_text_item(text_content):
-            # Create a static text item
-            static_text_item = {
-                "createItem": {
-                    "item": {
-                        "title": "",
-                        "description": text_content,
-                        "pageBreakItem": {},
-                    },
-                    "location": {"index": 0},
-                }
+        # Create a static text item
+        static_text_item = {
+            "createItem": {
+                "item": {
+                    "title": "",
+                    "description": text_content,
+                    "pageBreakItem": {},
+                },
+                "location": {"index": 0},
             }
-            return static_text_item
+        }
+        return static_text_item
 
     def authenticate():
         # Authenticate and build the Google Forms API service
-        SCOPES = ['https://www.googleapis.com/auth/forms.body']
+        SCOPES = ["https://www.googleapis.com/auth/forms.body"]
         flow = InstalledAppFlow.from_client_secrets_file(client_secrets_file, SCOPES)
         creds = flow.run_local_server(port=0)
-        service = build('forms', 'v1', credentials=creds)
+        service = build("forms", "v1", credentials=creds)
         return service
 
     def create_question_item(question_title, question_type, extra_info):
         # Map the question_type to Google Forms API item types
         question_item = {}
-        if question_type == 'TEXT':
+        if question_type == "TEXT":
             question_item = {
                 "createItem": {
                     "item": {
@@ -142,7 +142,7 @@ def dataframe_to_form(
                     "location": {"index": 0},
                 }
             }
-        elif question_type == 'PARAGRAPH_TEXT':
+        elif question_type == "PARAGRAPH_TEXT":
             question_item = {
                 "createItem": {
                     "item": {
@@ -153,17 +153,17 @@ def dataframe_to_form(
                     "location": {"index": 0},
                 }
             }
-        elif question_type in ['MULTIPLE_CHOICE', 'CHECKBOXES', 'DROPDOWN']:
+        elif question_type in ["MULTIPLE_CHOICE", "CHECKBOXES", "DROPDOWN"]:
             # Extract options from extra_info, if provided
             options = (
-                [{"value": opt.strip()} for opt in extra_info.split(',')]
+                [{"value": opt.strip()} for opt in extra_info.split(",")]
                 if extra_info
                 else [{"value": "Option 1"}, {"value": "Option 2"}]
             )
             choice_type = {
-                'MULTIPLE_CHOICE': 'RADIO',
-                'CHECKBOXES': 'CHECKBOX',
-                'DROPDOWN': 'DROP_DOWN',
+                "MULTIPLE_CHOICE": "RADIO",
+                "CHECKBOXES": "CHECKBOX",
+                "DROPDOWN": "DROP_DOWN",
             }[question_type]
             question_item = {
                 "createItem": {
@@ -181,7 +181,7 @@ def dataframe_to_form(
                     "location": {"index": 0},
                 }
             }
-        elif question_type == 'DATE':
+        elif question_type == "DATE":
             question_item = {
                 "createItem": {
                     "item": {
@@ -192,7 +192,7 @@ def dataframe_to_form(
                     "location": {"index": 0},
                 }
             }
-        elif question_type == 'TIME':
+        elif question_type == "TIME":
             question_item = {
                 "createItem": {
                     "item": {
@@ -227,29 +227,29 @@ def dataframe_to_form(
         form_title = f"Form for Row {index + 1}"
         form = {"info": {"title": form_title, "documentTitle": form_title}}
         form_response = service.forms().create(body=form).execute()
-        form_id = form_response['formId']
+        form_id = form_response["formId"]
 
         requests = []
 
         if static_texts:
             for position, text_content in sorted(static_texts.items()):
                 static_text_item = create_static_text_item(text_content)
-                static_text_item['createItem']['location']['index'] = position
+                static_text_item["createItem"]["location"]["index"] = position
                 requests.append(static_text_item)
 
         for field in form_table.columns:
             existing_value = row[field]
             if pd.isna(existing_value):
-                existing_value = ''
+                existing_value = ""
             else:
                 existing_value = str(existing_value)
 
             question_type = (
-                field_element_types.get(field, 'TEXT')
+                field_element_types.get(field, "TEXT")
                 if field_element_types
-                else 'TEXT'
+                else "TEXT"
             )
-            extra_info = field_extra_info.get(field, '') if field_extra_info else ''
+            extra_info = field_extra_info.get(field, "") if field_extra_info else ""
 
             # Include existing value in the question description
             question_title = f"{field}"
@@ -265,15 +265,15 @@ def dataframe_to_form(
             requests.append(question_item)
 
         # Update the form with the new questions
-        body = {'requests': requests}
+        body = {"requests": requests}
         service.forms().batchUpdate(formId=form_id, body=body).execute()
 
         # Collect form information
         forms_info.append(
             {
-                'form_id': form_id,
-                'form_edit_url': f"https://docs.google.com/forms/d/{form_id}/edit",
-                'form_response_url': f"https://docs.google.com/forms/d/{form_id}/viewform",
+                "form_id": form_id,
+                "form_edit_url": f"https://docs.google.com/forms/d/{form_id}/edit",
+                "form_response_url": f"https://docs.google.com/forms/d/{form_id}/viewform",
             }
         )
 

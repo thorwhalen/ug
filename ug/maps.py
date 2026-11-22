@@ -27,8 +27,8 @@ from ug.util import (
 DFLT_RADIUS_IN_METERS = 50000  # in meters
 
 
-LocationsSource = TypeVar('LocationsSource')
-Location = TypeVar('Location')
+LocationsSource = TypeVar("LocationsSource")
+Location = TypeVar("Location")
 
 
 def identity(x):
@@ -45,13 +45,13 @@ def google_maps_url(
     *,
     zoom: int = 15,
     maptype: Literal[
-        'roadmap', 'satellite', 'hybrid', 'terrain', 'google_earth'
-    ] = 'roadmap',
+        "roadmap", "satellite", "hybrid", "terrain", "google_earth"
+    ] = "roadmap",
     origin: str = None,
     destination: str = None,
-    travelmode: Literal['driving', 'walking', 'bicycling', 'transit'] = None,
+    travelmode: Literal["driving", "walking", "bicycling", "transit"] = None,
     waypoints: list[str] = None,
-    layer: Literal['bicycling', 'traffic', 'transit'] = None,
+    layer: Literal["bicycling", "traffic", "transit"] = None,
     place_id: str = None,
     street_view: bool = False,
     heading: float = None,
@@ -96,9 +96,9 @@ def google_maps_url(
     if isinstance(query, (tuple, list)) and len(query) == 2:
         query = f"{query[0]},{query[1]}"
     elif isinstance(query, dict):
-        if 'lat' in query and 'lon' in query:
+        if "lat" in query and "lon" in query:
             query = f"{query['lat']},{query['lon']}"
-        elif 'latitude' in query and 'longitude' in query:
+        elif "latitude" in query and "longitude" in query:
             query = f"{query['latitude']},{query['longitude']}"
         else:
             raise ValueError(
@@ -111,57 +111,57 @@ def google_maps_url(
 
     # Map types and layers
     maptype_mapping = {
-        'roadmap': 'm',
-        'satellite': 'k',
-        'hybrid': 'h',
-        'terrain': 'p',
-        'google_earth': 'e',
+        "roadmap": "m",
+        "satellite": "k",
+        "hybrid": "h",
+        "terrain": "p",
+        "google_earth": "e",
     }
     layer_mapping = {
-        'bicycling': 'c',
-        'traffic': 't',
-        'transit': 'p',
+        "bicycling": "c",
+        "traffic": "t",
+        "transit": "p",
     }
 
     # Construct parameters
     params = {}
     if origin or destination or travelmode or waypoints:
-        base_url = 'https://www.google.com/maps/dir/'
-        params['api'] = '1'
+        base_url = "https://www.google.com/maps/dir/"
+        params["api"] = "1"
         if origin:
-            params['origin'] = origin
+            params["origin"] = origin
         if destination:
-            params['destination'] = destination
+            params["destination"] = destination
         if travelmode:
-            params['travelmode'] = travelmode
+            params["travelmode"] = travelmode
         if waypoints:
-            params['waypoints'] = '|'.join(waypoints)
+            params["waypoints"] = "|".join(waypoints)
     else:
-        base_url = 'https://www.google.com/maps'
+        base_url = "https://www.google.com/maps"
         if place_id:
-            params['place_id'] = place_id
+            params["place_id"] = place_id
         else:
-            params['q'] = query
-            params['z'] = str(zoom)
-            params['t'] = maptype_mapping.get(maptype, 'm')
+            params["q"] = query
+            params["z"] = str(zoom)
+            params["t"] = maptype_mapping.get(maptype, "m")
             if layer:
-                params['layer'] = layer_mapping.get(layer)
+                params["layer"] = layer_mapping.get(layer)
             if street_view:
-                params['cbll'] = query
-                cbp_params = ['12']
-                cbp_params.append(str(heading) if heading is not None else '0')
-                cbp_params.append(str(pitch) if pitch is not None else '0')
-                cbp_params.extend(['0', '5', '0'])
-                params['cbp'] = ','.join(cbp_params)
+                params["cbll"] = query
+                cbp_params = ["12"]
+                cbp_params.append(str(heading) if heading is not None else "0")
+                cbp_params.append(str(pitch) if pitch is not None else "0")
+                cbp_params.extend(["0", "5", "0"])
+                params["cbp"] = ",".join(cbp_params)
     if language:
-        params['hl'] = language
+        params["hl"] = language
     if embed:
-        params['output'] = 'embed'
+        params["output"] = "embed"
     if iwloc:
-        params['iwloc'] = iwloc
+        params["iwloc"] = iwloc
 
     # Construct and return URL
-    query_string = urlencode(params, safe=',|')
+    query_string = urlencode(params, safe=",|")
     url = f"{base_url}?{query_string}"
     return url
 
@@ -303,8 +303,8 @@ def search_maps(
         # Geocode the city name to get coordinates
         geocode_result = gmaps_client.geocode(center_location)
         if geocode_result:
-            location = geocode_result[0]['geometry']['location']
-            location_coords = (location['lat'], location['lng'])
+            location = geocode_result[0]["geometry"]["location"]
+            location_coords = (location["lat"], location["lng"])
         else:
             raise ValueError(f"Could not find location for: {center_location}")
     elif isinstance(center_location, (tuple, list)) and len(center_location) == 2:
@@ -364,18 +364,18 @@ def maps_paged_results(
         radius=radius_in_meters,
     )
 
-    yield response.get('results', [])
+    yield response.get("results", [])
 
     # Handle pagination
-    while 'next_page_token' in response:
+    while "next_page_token" in response:
         time.sleep(seconds_between_requests)
         response = gmaps_client.places(
             query=query,
-            page_token=response['next_page_token'],
+            page_token=response["next_page_token"],
             location=location_coords,
             radius=radius_in_meters,
         )
-        yield response.get('results', [])
+        yield response.get("results", [])
 
 
 def get_latlon(
@@ -390,8 +390,8 @@ def get_latlon(
 
     geocode_result = gmaps_client.geocode(query)
     if geocode_result:
-        location = geocode_result[0]['geometry']['location']
-        return location['lat'], location['lng']
+        location = geocode_result[0]["geometry"]["location"]
+        return location["lat"], location["lng"]
     else:
         raise ValueError(f"Could not find location for: {query}")
 
